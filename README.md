@@ -1,61 +1,137 @@
-# ORB Backtesting + Risk Management Example
+# ORB Backtesting + Risk Management + Brokerage + Slippage
 
-A Python backtesting project for an **Opening Range Breakout (ORB)** strategy with a special focus on **risk management and position sizing**.
+A Python backtesting project for an **Opening Range Breakout (ORB)** strategy with a strong focus on:
+
+- Risk management
+- Position sizing
+- Slippage simulation
+- Brokerage simulation
+- Realistic backtesting
 
 Most traders focus only on entries.
 
-But in real trading:
+But in actual trading:
 
-> Risk management decides survival.
+> Survival is decided by execution quality and risk management.
 
-This project demonstrates how the **same strategy can produce completely different outcomes depending on position sizing and risk per trade.**
+This project demonstrates how the **same strategy can produce very different results once real-world costs are added.**
 
-The strategy uses intraday JSON candle data and demonstrates:
+The strategy uses intraday JSON candle data and supports:
 
 - ORB entries
 - Stop Loss
 - Risk:Reward targets
-- End of Day exits
-- Position sizing concepts
-- Fixed quantity vs risk-based quantity
-- Performance comparison
+- End-of-Day exits
+- Risk-based position sizing
+- Brokerage simulation
+- Slippage simulation
+- Realistic PnL calculations
+- Performance statistics
 
 ---
 
 # Why This Project Exists
 
-Two traders can take:
+Two traders can use:
 
 - Same strategy
 - Same entry
 - Same stop loss
 - Same target
 
-And still get completely different results.
+And still get very different outcomes.
 
 Example:
 
 Trader A:
 
 ```text
-Risk per trade = ₹500
+No brokerage
+No slippage
 ```
 
 Trader B:
 
 ```text
-Risk per trade = ₹5000
+Real brokerage
+Real slippage
 ```
 
 Same trade.
 
-Different outcome.
+Different result.
 
-One survives drawdowns.
+One sees fantasy profits.
 
-The other blows up the account.
+The other sees realistic results.
 
-This repo is built to demonstrate that **risk management matters more than entries.**
+This project exists to demonstrate why:
+
+```text
+Backtest realism
+>
+Backtest profits
+```
+
+---
+
+# Biggest Beginner Mistake
+
+Many beginner backtests assume:
+
+```text
+Entry price = chart price
+Exit price = chart price
+Brokerage = 0
+Slippage = 0
+```
+
+Reality:
+
+You almost never get chart price.
+
+There are:
+
+- execution delays
+- bid/ask spread
+- slippage
+- brokerage
+- taxes
+- liquidity impact
+
+Ignoring these can completely distort a strategy.
+
+Example:
+
+Without costs:
+
+```text
+Trades:81
+
+Win Rate:55.56%
+
+PnL:
+
+₹16,077
+```
+
+After adding brokerage + slippage:
+
+```text
+Trades:81
+
+Win Rate:48.15%
+
+PnL:
+
+₹5,198
+```
+
+Same strategy.
+
+Same trades.
+
+Only realism changed.
 
 ---
 
@@ -79,7 +155,9 @@ The script calculates:
 
 ```text
 Opening High
+
 =
+
 Highest High
 between
 09:15–09:29
@@ -89,7 +167,9 @@ and
 
 ```text
 Opening Low
+
 =
+
 Lowest Low
 between
 09:15–09:29
@@ -97,14 +177,16 @@ between
 
 ---
 
-# Entry Rules
-
-## BUY Entry
+# BUY Entry Rules
 
 Enter BUY when:
 
 ```text
-Current candle High > Opening High
+Current candle High
+
+>
+
+Opening High
 ```
 
 Trade parameters:
@@ -114,19 +196,27 @@ Entry = Current candle Close
 
 SL = Opening Low
 
-Risk Per Share = Entry − SL
+Risk Per Share
 
-Target = Entry + (Risk × RR)
+=
+
+Entry − SL
+
+Target
+
+=
+
+Entry + (Risk × RR)
 ```
 
 Example:
 
 ```text
-Opening High = 1700
+Opening High=1700
 
-Opening Low = 1690
+Opening Low=1690
 
-Breakout candle closes = 1705
+Breakout candle closes=1705
 
 Risk:
 
@@ -138,19 +228,23 @@ RR=2
 
 Target:
 
-1705 + (15×2)
+1705+(15×2)
 
 =1735
 ```
 
 ---
 
-## SELL Entry
+# SELL Entry Rules
 
 Enter SELL when:
 
 ```text
-Current candle Low < Opening Low
+Current candle Low
+
+<
+
+Opening Low
 ```
 
 Trade parameters:
@@ -160,9 +254,17 @@ Entry = Current candle Close
 
 SL = Opening High
 
-Risk Per Share = SL − Entry
+Risk Per Share
 
-Target = Entry − (Risk × RR)
+=
+
+SL − Entry
+
+Target
+
+=
+
+Entry − (Risk × RR)
 ```
 
 Example:
@@ -197,27 +299,37 @@ Trade exits when:
 
 ### BUY
 
-- Target reached
-- Stop Loss reached
+- Target hit
+- Stop loss hit
 - Time ≥ 3:15 PM
 
 ### SELL
 
-- Target reached
-- Stop Loss reached
+- Target hit
+- Stop loss hit
 - Time ≥ 3:15 PM
 
 ---
 
-# Risk Management Focus
+# Risk Management Logic
 
-This repository emphasizes:
+The project uses:
 
 ```text
-Position Size
+Risk Based Position Sizing
+```
+
+Formula:
+
+```text
+Quantity
+
 =
-Allowed Risk Per Trade
+
+Allowed Risk
+
 ÷
+
 Risk Per Share
 ```
 
@@ -229,13 +341,13 @@ Account:
 ₹100,000
 ```
 
-Risk allowed:
+Risk:
 
 ```text
 1%
 ```
 
-Maximum loss:
+Allowed loss:
 
 ```text
 ₹1000
@@ -244,12 +356,12 @@ Maximum loss:
 Trade:
 
 ```text
-Entry = 1705
+Entry=1705
 
-SL = 1695
+SL=1695
 ```
 
-Risk per share:
+Risk/share:
 
 ```text
 1705−1695
@@ -260,7 +372,7 @@ Risk per share:
 Quantity:
 
 ```text
-1000 ÷ 10
+1000÷10
 
 =100 shares
 ```
@@ -268,24 +380,20 @@ Quantity:
 Meaning:
 
 ```text
-No matter what happens,
+Max expected loss
 
-max loss ≈ ₹1000
+≈ ₹1000
 ```
-
-This is the core idea behind professional risk management.
 
 ---
 
-# Why Fixed Quantity Can Mislead Backtests
+# Why Fixed Quantity Is Misleading
 
-Most beginner backtests use:
+Many beginner backtests use:
 
 ```python
 QTY=100
 ```
-
-Problem:
 
 Trade 1:
 
@@ -293,7 +401,7 @@ Trade 1:
 SL distance=5
 ```
 
-Actual risk:
+Risk:
 
 ```text
 5×100
@@ -307,7 +415,7 @@ Trade 2:
 SL distance=30
 ```
 
-Actual risk:
+Risk:
 
 ```text
 30×100
@@ -317,9 +425,9 @@ Actual risk:
 
 Same quantity.
 
-Completely different risk.
+Different risk.
 
-This creates unrealistic backtest results.
+This creates misleading results.
 
 ---
 
@@ -334,38 +442,146 @@ QTY=100
 Use:
 
 ```text
-Risk Based Position Sizing
+Risk Based Quantity
+```
+
+Benefits:
+
+✓ Controlled drawdowns
+
+✓ Consistent risk
+
+✓ Easier scaling
+
+✓ Fair strategy comparison
+
+✓ Professional position sizing
+
+---
+
+# Brokerage Simulation
+
+The project now supports brokerage.
+
+Example config:
+
+```python
+BROKERAGE=0.0003
+```
+
+Brokerage gets applied on:
+
+```text
+Entry turnover
+
++
+
+Exit turnover
 ```
 
 Formula:
 
 ```text
-Quantity
+Turnover
 
 =
 
-Allowed Trade Risk
+(entry×qty)
 
-÷
++
 
-Risk Per Share
+(exit×qty)
 ```
 
-Benefits:
+Charges:
 
-✓ Consistent losses
+```text
+Brokerage
 
-✓ Controlled drawdowns
+=
 
-✓ Fair strategy comparison
+Turnover × BROKERAGE
+```
 
-✓ Realistic backtesting
+Final:
 
-✓ Easier account scaling
+```text
+PnL
+
+=
+
+Gross PnL
+
+−
+
+Brokerage
+```
 
 ---
 
-# Expected Folder Structure
+# Slippage Simulation
+
+The project also supports slippage.
+
+Example:
+
+```python
+SLIPPAGE=0.0005
+```
+
+Equivalent:
+
+```text
+0.05%
+```
+
+Applied during execution:
+
+BUY entry:
+
+```text
+Actual Entry
+
+=
+
+Price × (1+slippage)
+```
+
+SELL entry:
+
+```text
+Actual Entry
+
+=
+
+Price × (1−slippage)
+```
+
+BUY exit:
+
+```text
+Actual Exit
+
+=
+
+Price × (1−slippage)
+```
+
+SELL exit:
+
+```text
+Actual Exit
+
+=
+
+Price × (1+slippage)
+```
+
+This simulates real market execution.
+
+---
+
+# Folder Structure
 
 ```text
 project/
@@ -389,18 +605,18 @@ project/
 
 ```json
 [
-  {
+   {
       "stat":"Ok",
       "time":"01-01-2026 09:15:00",
       "into":"1700",
       "inth":"1705",
       "intl":"1698",
       "intc":"1702"
-  }
+   }
 ]
 ```
 
-Field meaning:
+Field explanation:
 
 | Field | Description |
 |--------|-------------|
@@ -415,12 +631,10 @@ Field meaning:
 
 # Config Variables
 
-Modify values:
-
 ```python
 DATA_DIR="./back_data"
 
-SYMBOL="HDFCBANK-EQ"
+SYMBOL="JIOFIN-EQ"
 
 START_DATE=datetime(
     2026,
@@ -436,25 +650,36 @@ END_DATE=datetime(
 
 TARGET_RR=2
 
-QTY=100
+CAPITAL=100000
+
+RISK_PERCENT=1
+
+SLIPPAGE=0.0005
+
+BROKERAGE=0.0003
 ```
 
-Variable explanation:
+---
+
+# Variable Meaning
 
 | Variable | Meaning |
-|-----------|----------|
-| DATA_DIR | Data folder |
+|---|---|
+| DATA_DIR | Data location |
 | SYMBOL | Symbol |
 | START_DATE | Backtest start |
 | END_DATE | Backtest end |
 | TARGET_RR | Risk reward ratio |
-| QTY | Trade quantity |
+| CAPITAL | Total capital |
+| RISK_PERCENT | Risk per trade |
+| SLIPPAGE | Execution slippage |
+| BROKERAGE | Broker charges |
 
 ---
 
 # Install
 
-Install dependencies:
+Install dependency:
 
 ```bash
 pip install pandas
@@ -475,23 +700,23 @@ python backtest.py
 ```text
 ===== 2026-01-02 =====
 
-Opening High: 1720.25
+Opening High:1720
 
-Opening Low: 1698.10
+Opening Low:1698
 
-BUY : 1723.50
+BUY:1723
 
-SL : 1698.10
+SL:1698
 
-TARGET : 1774.30
+TARGET:1774
 
-QTY : 100
+QTY:100
 
-EXIT: TARGET
+EXIT:TARGET
 
-PnL: 5080
+PnL:4820
 
-Day PnL: 5080
+Day PnL:4820
 ```
 
 ---
@@ -501,24 +726,24 @@ Day PnL: 5080
 ```text
 ===== FINAL =====
 
-Trades: 25
+Trades:81
 
-Wins: 14
+Wins:39
 
-Losses: 11
+Losses:42
 
-Win Rate: 56%
+Win Rate:48.15%
 
-PnL: 21850
+PnL:5198
 
 
 ===== DAYS =====
 
-Profitable:18
+Profitable:39
 
-Loss:6
+Loss:42
 
-Flat:1
+Flat:2
 ```
 
 ---
@@ -533,77 +758,78 @@ Script tracks:
 - Losses
 - Win rate
 - Profitable days
-- Losing days
+- Loss days
 - Flat days
 
 ---
 
-# Current Limitations
-
-Current version:
-
-✓ One trade per day
+# Current Features
 
 ✓ ORB strategy
 
-✓ Fixed quantity sizing
+✓ One trade/day
 
-✓ End of day square-off
+✓ End-of-day square off
 
-Missing:
+✓ Dynamic position sizing
 
-✗ Brokerage
+✓ Brokerage simulation
 
-✗ Slippage
+✓ Slippage simulation
 
-✗ Dynamic risk %
+✓ Risk management
 
-✗ Equity curve
-
-✗ Drawdown analysis
-
-✗ Multiple trades/day
-
-✗ Trailing stop loss
-
-✗ Tradebook CSV
+✓ Trade statistics
 
 ---
 
-# Future Improvements
+# Planned Improvements
 
-Planned:
-
-- Dynamic risk %
-- Position sizing engine
-- Drawdown metrics
 - Equity curve
-- Brokerage simulation
-- Slippage simulation
-- Trade export CSV
-- Portfolio-level risk
-- Multiple symbols
+- Drawdown metrics
+- Tradebook CSV export
+- Portfolio level testing
+- Multiple trades/day
+- Trailing SL
+- Sector analysis
+- Multi-symbol testing
 
 ---
 
 # Key Lesson
 
-Most traders think:
+Many traders think:
 
 ```text
 Entry Strategy
+
 =
+
 Profit
 ```
 
 Reality:
 
 ```text
-Strategy + Risk Management
+Strategy
+
++
+
+Risk Management
+
++
+
+Brokerage
+
++
+
+Slippage
 
 =
 
-Long-Term Survival
+Reality
 ```
 
-This project exists to demonstrate exactly that.
+Backtesting should not sell dreams.
+
+It should move closer to reality.
