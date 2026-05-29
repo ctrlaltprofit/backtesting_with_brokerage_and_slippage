@@ -16,6 +16,9 @@ TARGET_RR = 2
 CAPITAL = 100000
 RISK_PERCENT = 1
 
+SLIPPAGE = 0.0005  #0.05%
+BROKERAGE = 0.0003  #0.03%
+
 
 
 
@@ -201,12 +204,12 @@ def run_backtest(
                 if high > opening_high:
 
                     position = "BUY"
-
-                    entry = close
+                    raw_entry = close
+                    entry = raw_entry * (1+SLIPPAGE)
 
                     sl = opening_low
 
-                    risk_per_stock = entry - sl
+                    risk_per_stock = raw_entry - sl
 
                     if risk_per_stock <= 0:
                         continue
@@ -257,7 +260,7 @@ def run_backtest(
 
                     target = (
 
-                        entry +
+                        raw_entry +
 
                         (
                             risk_per_stock *
@@ -290,12 +293,12 @@ def run_backtest(
                 elif low < opening_low:
 
                     position = "SELL"
-
-                    entry = close
+                    raw_entry = close
+                    entry = raw_entry * (1-SLIPPAGE)
 
                     sl = opening_high
 
-                    risk_per_stock = sl - entry
+                    risk_per_stock = sl - raw_entry
 
                     if risk_per_stock <= 0:
                         continue
@@ -345,7 +348,7 @@ def run_backtest(
 
                     target = (
 
-                        entry -
+                        raw_entry -
 
                         (
                             risk_per_stock *
@@ -392,14 +395,14 @@ def run_backtest(
 
                         exit_reason="TARGET"
 
-                        exit_price=target
+                        exit_price=target * (1-SLIPPAGE)
 
 
                     elif low <= sl:
 
                         exit_reason="SL"
 
-                        exit_price=sl
+                        exit_price=sl * (1-SLIPPAGE)
 
 
                 # SELL EXIT
@@ -410,14 +413,14 @@ def run_backtest(
 
                         exit_reason="TARGET"
 
-                        exit_price=target
+                        exit_price=target * (1+SLIPPAGE)
 
 
                     elif high >= sl:
 
                         exit_reason="SL"
 
-                        exit_price=sl
+                        exit_price=sl * (1+SLIPPAGE)
 
 
                 # EOD EXIT
@@ -436,8 +439,10 @@ def run_backtest(
                 ):
 
                     exit_reason="EOD"
-
-                    exit_price=close
+                    if position == "BUY":
+                        exit_price=close * (1-SLIPPAGE)
+                    elif position == "SELL":
+                        exit_price = close *(1+SLIPPAGE)
 
 
                 # ====================
@@ -466,6 +471,10 @@ def run_backtest(
 
                         ) * trade_qty
 
+                    turnover = (entry * trade_qty) + (exit_price * trade_qty)
+                    brokerage_charges = turnover*BROKERAGE
+
+                    pnl -=brokerage_charges
 
                     total_pnl += pnl
 
